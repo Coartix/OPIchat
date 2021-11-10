@@ -1,8 +1,6 @@
 #ifndef BASIC_CLIENT_H_
 #define BASIC_CLIENT_H_
 
-#define _POSIX_C_SOURCE 200112L
-
 #include <netdb.h>
 #include <sys/socket.h>
 #include <sys/types.h>

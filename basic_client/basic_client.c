@@ -1,3 +1,5 @@
+#define _POSIX_C_SOURCE 200112L
+
 #include "basic_client.h"
 
 #include <err.h>
@@ -42,11 +44,11 @@ int prepare_socket(const char *ip, const char *port)
     {
         socket = create_and_connect(servinfo);
         freeaddrinfo(servinfo);
-        // printf("%d\n", socket);
         return socket;
     }
     else
     {
+        freeaddrinfo(servinfo);
         errx(1, "basic_client: error in prepare_socket");
     }
 }
@@ -56,23 +58,18 @@ void communicate(int server_socket)
     char buffer[DEFAULT_BUFFER_SIZE];
     int count_print = 0;
     fprintf(stderr, "Enter your message:\n");
-    while (fgets(buffer, DEFAULT_BUFFER_SIZE - 1, stdin))
+    while (fgets(buffer, DEFAULT_BUFFER_SIZE, stdin))
     {
         if (buffer[0] == '\0')
             continue;
+
         int len = strlen(buffer);
-        // printf("%d\n", len);
-        // char buff[len + 1];
-        // for (int i = 0; i < len + 1; i++)
-        //     buff[i] = buffer[i];
-        // buff[len] = '\0';
         ssize_t sent = send(server_socket, buffer, len, MSG_NOSIGNAL);
         if (sent == -1)
             errx(1, "basic_client: error in communicate send");
 
-        // char buffer2[len + 1];
-        // buffer2[len] = '\0';
-        ssize_t received = recv(server_socket, buffer, len, 0);
+        ssize_t received =
+            recv(server_socket, buffer, DEFAULT_BUFFER_SIZE - 1, 0);
         if (received == -1)
             errx(1, "basic_client: error in communicate recv");
 
@@ -80,7 +77,7 @@ void communicate(int server_socket)
             printf("Server answered with: %s", buffer);
         else
             printf("%s", buffer);
-        if (len >= DEFAULT_BUFFER_SIZE - 2)
+        if (len >= DEFAULT_BUFFER_SIZE - 1)
         {
             if (count_print == 0)
                 count_print = 1;
