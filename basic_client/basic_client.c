@@ -54,34 +54,32 @@ int prepare_socket(const char *ip, const char *port)
 void communicate(int server_socket)
 {
     char buffer[DEFAULT_BUFFER_SIZE];
-    char *buff;
-    char *buffer2;
     int count_print = 0;
     fprintf(stderr, "Enter your message:\n");
     while (fgets(buffer, DEFAULT_BUFFER_SIZE - 1, stdin))
     {
+        if (buffer[0] == '\0')
+            continue;
         int len = strlen(buffer);
         // printf("%d\n", len);
-        buff = malloc(sizeof(char) * len + 1);
-        buff = strcpy(buff, buffer);
-        ssize_t sent = send(server_socket, buff, len, MSG_NOSIGNAL);
+        // char buff[len + 1];
+        // for (int i = 0; i < len + 1; i++)
+        //     buff[i] = buffer[i];
+        // buff[len] = '\0';
+        ssize_t sent = send(server_socket, buffer, len, MSG_NOSIGNAL);
         if (sent == -1)
             errx(1, "basic_client: error in communicate send");
 
-        buffer2 = malloc(sizeof(char) * len + 1);
-        ssize_t received = recv(server_socket, buffer2, len, 0);
+        // char buffer2[len + 1];
+        // buffer2[len] = '\0';
+        ssize_t received = recv(server_socket, buffer, len, 0);
         if (received == -1)
             errx(1, "basic_client: error in communicate recv");
 
-        if (received < len)
-            buffer2[received] = '\0';
-        else
-            buffer2[len] = '\0';
-
         if (count_print == 0)
-            printf("Server answered with: %s", buffer2);
+            printf("Server answered with: %s", buffer);
         else
-            printf("%s", buffer2);
+            printf("%s", buffer);
         if (len >= DEFAULT_BUFFER_SIZE - 2)
         {
             if (count_print == 0)
@@ -89,11 +87,9 @@ void communicate(int server_socket)
         }
         else
         {
-            // fprintf(stderr, "Enter your message:\n");
+            fprintf(stderr, "Enter your message:\n");
             count_print = 0;
         }
-        free(buff);
-        free(buffer2);
     }
 }
 
